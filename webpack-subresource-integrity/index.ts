@@ -5,22 +5,22 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createHash } from "crypto";
-import type { Compiler, Compilation } from "webpack";
-import { RuntimeModule, Template, sources } from "webpack";
-import {
-  SubresourceIntegrityPluginResolvedOptions,
-  getHtmlWebpackPluginHooksType,
-} from "./types";
-import { Plugin } from "./plugin";
-import { Reporter } from "./reporter";
-import {
-  findChunks,
-  placeholderPrefix,
-  generateSriHashPlaceholders,
-  sriHashVariableReference,
-} from "./util";
-
+ import { createHash } from "crypto";
+ import type { Compiler, Compilation } from "webpack";
+ import { RuntimeModule, Template, sources } from "webpack";
+ import {
+   SubresourceIntegrityPluginResolvedOptions,
+   getHtmlWebpackPluginHooksType,
+ } from "./types";
+ import { Plugin } from "./plugin";
+ import { Reporter } from "./reporter";
+ import {
+   findChunks,
+   placeholderPrefix,
+   generateSriHashPlaceholders,
+   sriHashVariableReference,
+ } from "./util";
+ 
 interface StatsObjectWithIntegrity {
   integrity: string;
 }
@@ -137,6 +137,21 @@ export class SubresourceIntegrityPlugin {
         return plugin.processAssets(records);
       }
     );
+
+    compilation.hooks.additionalAssets.tapAsync(thisPluginName, (callback) => {
+      const { RawSource } = compilation.compiler.webpack.sources;
+      for (const chunk of compilation.chunks.values()) {
+        if (!chunk.rendered) {
+          const source = new RawSource(chunk.id as string);
+          compilation.assets[`${chunk.id}.js`] =
+            new compilation.compiler.webpack.sources.ReplaceSource(
+              source,
+              chunk.id as string
+            );
+        }
+      }
+      callback();
+    });
 
     compilation.hooks.afterProcessAssets.tap(
       thisPluginName,
