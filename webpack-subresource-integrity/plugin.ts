@@ -223,8 +223,9 @@ more information."
     childChunk: Chunk,
     assets: Record<string, sources.Source>
   ) => {
-    const files = Array.from(childChunk.files);
+    const files: string[] = Array.from(childChunk.files);
 
+    if (files.length <= 0) files.push(`${childChunk.id}.js` as string);
     files.forEach((sourcePath) => {
       if (assets[sourcePath]) {
         this.warnIfHotUpdate(assets[sourcePath].source());
@@ -305,7 +306,7 @@ more information."
       }
     } else {
       Array.from(this.compilation.chunks)
-        .filter((chunk) => chunk.hasRuntime())
+        //.filter((chunk) => chunk.hasRuntime())
         .forEach((chunk) => {
           this.processChunk(chunk, assets);
         });

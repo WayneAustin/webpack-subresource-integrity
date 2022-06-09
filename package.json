@@ -4,7 +4,8 @@
     "webpack-subresource-integrity",
     "wsi-test-helper",
     "nyc-apply-source-map",
-    "examples/*"
+    "examples/*",
+    "examples/module-federation/*"
   ],
   "resolutions": {
     "webpack-subresource-integrity": "portal:webpack-subresource-integrity",

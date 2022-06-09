@@ -1,0 +1,17 @@
+{
+  "headers": [
+    {
+      "source": "*",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "'script-src' 'script-src-elem' 'self' 'unsafe-eval' http://localhost:8080"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
+}

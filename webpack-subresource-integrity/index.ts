@@ -138,6 +138,24 @@ export class SubresourceIntegrityPlugin {
       }
     );
 
+    compilation.hooks.additionalAssets.tapAsync(thisPluginName, (callback) => {
+      const { RawSource } = compilation.compiler.webpack.sources;
+      for (const chunk of compilation.chunks.values()) {
+        if (!chunk.rendered) {
+
+          if (typeof chunk.id === 'number') {
+            const source = new RawSource(chunk.id.toString());
+            compilation.assets[`${chunk.id}.js`] =
+              new compilation.compiler.webpack.sources.ReplaceSource(
+                source,
+                chunk.id as unknown as string
+              );
+          }
+        }
+      }
+      callback();
+    });
+
     compilation.hooks.afterProcessAssets.tap(
       thisPluginName,
       (records: Record<string, sources.Source>) => {
