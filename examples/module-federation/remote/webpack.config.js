@@ -2,25 +2,20 @@ const { SubresourceIntegrityPlugin } = require("webpack-subresource-integrity");
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const expect = require("expect");
+const deps = require('./package.json').dependencies;
 
 module.exports = {
-  mode: 'development',
+  mode: 'production',
   entry: {
     index: "./index.js",
   },
   module: {
     rules: [
       {
-        test: /\.m?js$/,
+        test: /\.(js|jsx|tsx|ts)$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-react','@babel/preset-env'],
-            plugins: ['@babel/plugin-transform-runtime'],
-          }
-        }
-      }
+        loader: 'ts-loader',
+      },
     ]
   },
   output: {
@@ -35,7 +30,11 @@ module.exports = {
       exposes: {
         './Remote': './bootstrap'
       },
-      shared: ['react', 'react-dom'],
+      shared: {
+        ...deps,
+        react: { singleton: true, eager: true, requiredVersion: deps.react },
+        'react-dom': { singleton: true, eager: true, requiredVersion: deps['react-dom'] },
+      }
     }),
     new HtmlWebpackPlugin({
       template: './public/index.html'

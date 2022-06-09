@@ -2,42 +2,64 @@ const { SubresourceIntegrityPlugin } = require("webpack-subresource-integrity");
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const expect = require("expect");
+const deps = require('./package.json').dependencies;
+
+class LoadRemotesPlugin {
+  apply(compiler) {
+    compiler.hooks.compilation.tap('LoadRemotesPlugin', async (compilation) => {
+      HtmlWebpackPlugin.getHooks(compilation).afterTemplateExecution.tapAsync('LoadRemotesPlugin',
+        async (data, callback) => {
+          const scriptTag = {
+            tagName: 'script',
+            attributes: {
+              src: `http://localhost:8081/remoteEntry.js`,
+              crossorigin: 'anonymous',
+              integrity: 'sha256-8mVmOmUdZ9alUlb/mdmxe2KTdglrY+IvPXp8P0vSvb8='
+            }
+          };
+          // note: .unshift so bundle.js is last to be served
+          data.headTags.unshift(scriptTag);
+          callback();
+        });
+    });
+  }
+};
 
 module.exports = {
-  mode: 'development',
+  mode: 'production',
   entry: {
     index: "./index.js",
   },
   module: {
     rules: [
       {
-        test: /\.m?js$/,
+        test: /\.(js|jsx|tsx|ts)$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-react','@babel/preset-env'],
-            plugins: ['@babel/plugin-transform-runtime'],
-          }
-        }
-      }
+        loader: 'ts-loader',
+      },
     ]
   },
   output: {
     crossOriginLoading: "anonymous",
-    publicPath: 'http://localhost:8080/',
   },
   plugins: [
     new ModuleFederationPlugin({
       name: 'container',
+      library: { type: 'var', name: 'container' },
+      filename: 'mfe/remoteEntry.js',
       remotes: {
-        example: 'example@http://localhost:8081/remoteEntry.js',
+        example: 'example',
       },
-      shared: ['react', 'react-dom'],
+      shared: {
+        ...deps,
+        'react': { singleton: true, eager: true, requiredVersion: deps.react },
+        'react-dom': { singleton: true, eager: true, requiredVersion: deps['react-dom'] },
+      }
     }),
     new HtmlWebpackPlugin({
       template: './public/index.html'
     }),
+    new LoadRemotesPlugin(),
     new SubresourceIntegrityPlugin({
       hashFuncNames: ["sha256"],
       enabled: true,
