@@ -5,22 +5,22 @@
  * LICENSE file in the root directory of this source tree.
  */
 
- import { createHash } from "crypto";
- import type { Compiler, Compilation } from "webpack";
- import { RuntimeModule, Template, sources } from "webpack";
- import {
-   SubresourceIntegrityPluginResolvedOptions,
-   getHtmlWebpackPluginHooksType,
- } from "./types";
- import { Plugin } from "./plugin";
- import { Reporter } from "./reporter";
- import {
-   findChunks,
-   placeholderPrefix,
-   generateSriHashPlaceholders,
-   sriHashVariableReference,
- } from "./util";
- 
+import { createHash } from "crypto";
+import type { Compiler, Compilation } from "webpack";
+import { RuntimeModule, Template, sources } from "webpack";
+import {
+  SubresourceIntegrityPluginResolvedOptions,
+  getHtmlWebpackPluginHooksType,
+} from "./types";
+import { Plugin } from "./plugin";
+import { Reporter } from "./reporter";
+import {
+  findChunks,
+  placeholderPrefix,
+  generateSriHashPlaceholders,
+  sriHashVariableReference,
+} from "./util";
+
 interface StatsObjectWithIntegrity {
   integrity: string;
 }
